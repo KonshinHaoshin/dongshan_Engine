@@ -10,6 +10,8 @@ import { WebGALPixiContainer } from '@/Core/controller/stage/pixi/WebGALPixiCont
 import { WebGAL } from '@/Core/WebGAL';
 import { SCREEN_CONSTANTS } from '@/Core/util/constants';
 import { addSpineBgImpl, addSpineFigureImpl } from '@/Core/controller/stage/pixi/spine';
+import { AnimatedGIF } from '@pixi/gif';
+
 // import { figureCash } from '@/Core/gameScripts/vocal/conentsCash'; // 如果要使用 Live2D，取消这里的注释
 // import { Live2DModel, SoundManager } from 'pixi-live2d-display-webgal'; // 如果要使用 Live2D，取消这里的注释
 
@@ -519,6 +521,11 @@ export default class PixiStage {
    * @param presetPosition
    */
   public addFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
+    const ext = this.getExtName(url).toLowerCase();
+    if (ext === 'gif') {
+      this.addGifFigure(key, url, presetPosition);
+      return;
+    }
     const loader = this.assetLoader;
     // 准备用于存放这个立绘的 Container
     const thisFigureContainer = new WebGALPixiContainer();
@@ -601,6 +608,72 @@ export default class PixiStage {
       setup();
     }
   }
+
+  // 播放gif
+  public async addGifFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
+    const thisFigureContainer = new WebGALPixiContainer();
+
+    // 清除已有 key
+    const setFigIndex = this.figureObjects.findIndex((e) => e.key === key);
+    const isFigSet = setFigIndex >= 0;
+    if (isFigSet) {
+      this.removeStageObjectByKey(key);
+    }
+
+    const metadata = this.getFigureMetadataByKey(key);
+    if (metadata?.zIndex) {
+      thisFigureContainer.zIndex = metadata.zIndex;
+    }
+
+    this.figureContainer.addChild(thisFigureContainer);
+    const figureUuid = uuid();
+    this.figureObjects.push({
+      uuid: figureUuid,
+      key,
+      pixiContainer: thisFigureContainer,
+      sourceUrl: url,
+      sourceType: 'gif',
+      sourceExt: 'gif',
+    });
+
+    try {
+      const buffer = await fetch(url).then((res) => res.arrayBuffer());
+      const gif = await AnimatedGIF.fromBuffer(buffer);
+
+      const originalWidth = gif.width;
+      const originalHeight = gif.height;
+      const scaleX = this.stageWidth / originalWidth;
+      const scaleY = this.stageHeight / originalHeight;
+      const targetScale = Math.min(scaleX, scaleY);
+
+      gif.scale.set(targetScale);
+      gif.anchor.set(0.5);
+      gif.position.y = this.stageHeight / 2;
+
+      const targetWidth = originalWidth * targetScale;
+      const targetHeight = originalHeight * targetScale;
+
+      thisFigureContainer.setBaseY(this.stageHeight / 2);
+      if (targetHeight < this.stageHeight) {
+        thisFigureContainer.setBaseY(this.stageHeight / 2 + (this.stageHeight - targetHeight) / 2);
+      }
+
+      if (presetPosition === 'center') {
+        thisFigureContainer.setBaseX(this.stageWidth / 2);
+      } else if (presetPosition === 'left') {
+        thisFigureContainer.setBaseX(targetWidth / 2);
+      } else if (presetPosition === 'right') {
+        thisFigureContainer.setBaseX(this.stageWidth - targetWidth / 2);
+      }
+
+      thisFigureContainer.pivot.set(0, this.stageHeight / 2);
+      gif.play(); // 自动播放
+      thisFigureContainer.addChild(gif);
+    } catch (e) {
+      console.error('GIF 加载失败', e);
+    }
+  }
+
 
   /**
    * Live2d立绘，如果要使用 Live2D，取消这里的注释

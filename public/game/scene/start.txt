@@ -2,7 +2,4 @@ changeBg:matched_F18_cool.png;
 changeFigure:spine/anon/anon_4k_winter/s000_templete_MyGO.json?type=spine -motion=cool_coffee_sit_0;
 爱音:好了——听好了，吾乃羽丘之银狼、卖狗乐队的灵魂吉他手——千早·爱音！  -fontSize=default -id -anon/ansy/anon_ansy_50.wav -fontSize=default -id -figureId=anon;
 爱音:而汝，长崎素世，将是这孤独寂寥古战场(公园)之下唯一记得吾名者。  -fontSize=default -id -anon/ansy/anon_ansy_51.wav -fontSize=default -id -figureId=anon;
-爱音:今夜之后，吾将踏上命运的旅途，去往未知的补习地狱与期末试炼。  -fontSize=default -id -anon/ansy/anon_ansy_52.wav -fontSize=default -id -figureId=anon;
-爱音:此去一别——汝可要努力活下去啊，就算没有蛋糕、没有气球，也要用意志点燃烛光！  -fontSize=default -id -anon/ansy/anon_ansy_53.wav -fontSize=default -id -figureId=anon;
-爱音:待吾归来之日，便是——给汝补过生日之时！！  -fontSize=default -id -anon/ansy/anon_ansy_54.wav -fontSize=default -id -figureId=anon;
-小素世:爱音姐姐!|你真的不陪我过生日吗……;
+changeFigure:gif/output.gif;
