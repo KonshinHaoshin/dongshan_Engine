@@ -113,6 +113,9 @@ export default class PixiStage {
   private figureCash: any;
   private live2DModel: any;
   private soundManager: any;
+
+  private loadedJsonlCache: Set<string> = new Set();
+
   public constructor() {
     const app = new PIXI.Application({
       backgroundAlpha: 0,
@@ -522,8 +525,14 @@ export default class PixiStage {
    */
   public addFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
     const ext = this.getExtName(url).toLowerCase();
+    // gif播放
     if (ext === 'gif') {
       this.addGifFigure(key, url, presetPosition);
+      return;
+    }
+    // jsonl播放
+    if (ext === 'jsonl') {
+      this.addJsonlLive2dFigures(url);
       return;
     }
     const loader = this.assetLoader;
@@ -608,6 +617,65 @@ export default class PixiStage {
       setup();
     }
   }
+  /**
+   * 批量添加 JSONL 中定义的 Live2D 模型
+   * @param jsonlPath - jsonl 文件路径
+   */
+  public async addJsonlLive2dFigures(jsonlPath: string) {
+    if (this.loadedJsonlCache.has(jsonlPath)) return;
+    this.loadedJsonlCache.add(jsonlPath);
+
+    try {
+      const response = await fetch(jsonlPath);
+      if (!response.ok) throw new Error(`加载失败: ${jsonlPath}`);
+      const jsonlContent = await response.text();
+      const lines = jsonlContent
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim());
+
+      for (const line of lines) {
+        try {
+          const item = JSON.parse(line);
+          const { path, id, folder } = item;
+
+          if (!path) {
+            console.warn('跳过无 path 的项:', line);
+            continue;
+          }
+
+          // 生成唯一 key（可自定义逻辑）
+          const figureKey = 'jsonl_' + (id || path + '_' + Math.random().toString(36).slice(2, 8));
+          const position: 'left' | 'center' | 'right' = 'center';
+          const motion = 'idle01';
+          const expression = 'idle01';
+
+          // ✅ Step 1：加入 Redux 的 freeFigure 中，防止被 useSetFigure 移除
+          const freeFigureList = webgalStore.getState().stage.freeFigure;
+          const isExist = freeFigureList.some((f) => f.key === figureKey);
+          if (!isExist) {
+            webgalStore.dispatch(
+              stageActions.setFreeFigure([
+                ...freeFigureList,
+                {
+                  key: figureKey,
+                  name: path,
+                  basePosition: position,
+                },
+              ]),
+            );
+          }
+
+          // ✅ Step 2：添加 Live2D 模型到 PixiStage
+          this.addLive2dFigure(figureKey, path, position, motion, expression);
+        } catch (e) {
+          console.warn('解析 jsonl 行出错:', line, e);
+        }
+      }
+    } catch (e) {
+      console.error(`加载 JSONL 文件失败: ${jsonlPath}`, e);
+    }
+  }
 
   // 播放gif
   public async addGifFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
@@ -673,8 +741,6 @@ export default class PixiStage {
       console.error('GIF 加载失败', e);
     }
   }
-
-
   /**
    * Live2d立绘，如果要使用 Live2D，取消这里的注释
    * @param jsonPath

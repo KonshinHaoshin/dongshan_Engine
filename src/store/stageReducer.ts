@@ -181,6 +181,9 @@ const stageSlice = createSlice({
         if (newFigure.name !== '') currentFreeFigures.push(newFigure);
       }
     },
+    setFreeFigure: (state, action: PayloadAction<IFreeFigure[]>) => {
+      state.freeFigure = action.payload;
+    },
     setLive2dMotion: (state, action: PayloadAction<ILive2DMotion>) => {
       const { target, motion, overrideBounds } = action.payload;
 

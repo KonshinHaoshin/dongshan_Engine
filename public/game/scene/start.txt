@@ -1,5 +1,7 @@
 changeBg:matched_F18_cool.png;
-changeFigure:spine/anon/anon_4k_winter/s000_templete_MyGO.json?type=spine -motion=cool_coffee_sit_0;
-爱音:好了——听好了，吾乃羽丘之银狼、卖狗乐队的灵魂吉他手——千早·爱音！  -fontSize=default -id -anon/ansy/anon_ansy_50.wav -fontSize=default -id -figureId=anon;
-爱音:而汝，长崎素世，将是这孤独寂寥古战场(公园)之下唯一记得吾名者。  -fontSize=default -id -anon/ansy/anon_ansy_51.wav -fontSize=default -id -figureId=anon;
-changeFigure:gif/output.gif;
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko;
+祥子:test
+祥子:test
+这些报错通常发生在：
+changeFigure:none -id=jsonl_sakiko1 -next;
+caosinimenma
