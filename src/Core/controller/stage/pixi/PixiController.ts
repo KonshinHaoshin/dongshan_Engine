@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { webgalStore } from '@/store/store';
 import { setStage, stageActions } from '@/store/stageReducer';
 import cloneDeep from 'lodash/cloneDeep';
-import { IEffect, IFigureAssociatedAnimation, IFigureMetadata, ITransform } from '@/store/stageInterface';
+import { IEffect, IFigureAssociatedAnimation, IFigureMetadata, IFreeFigure, ITransform } from '@/store/stageInterface';
 import { logger } from '@/Core/util/logger';
 import { isIOS } from '@/Core/initializeScript';
 import { WebGALPixiContainer } from '@/Core/controller/stage/pixi/WebGALPixiContainer';
@@ -11,6 +11,7 @@ import { WebGAL } from '@/Core/WebGAL';
 import { SCREEN_CONSTANTS } from '@/Core/util/constants';
 import { addSpineBgImpl, addSpineFigureImpl } from '@/Core/controller/stage/pixi/spine';
 import { AnimatedGIF } from '@pixi/gif';
+import { setFreeFigure } from '@/store/stageReducer';
 
 // import { figureCash } from '@/Core/gameScripts/vocal/conentsCash'; // 如果要使用 Live2D，取消这里的注释
 // import { Live2DModel, SoundManager } from 'pixi-live2d-display-webgal'; // 如果要使用 Live2D，取消这里的注释
@@ -530,11 +531,6 @@ export default class PixiStage {
       this.addGifFigure(key, url, presetPosition);
       return;
     }
-    // jsonl播放
-    if (ext === 'jsonl') {
-      this.addJsonlLive2dFigures(url);
-      return;
-    }
     const loader = this.assetLoader;
     // 准备用于存放这个立绘的 Container
     const thisFigureContainer = new WebGALPixiContainer();
@@ -617,65 +613,6 @@ export default class PixiStage {
       setup();
     }
   }
-  /**
-   * 批量添加 JSONL 中定义的 Live2D 模型
-   * @param jsonlPath - jsonl 文件路径
-   */
-  public async addJsonlLive2dFigures(jsonlPath: string) {
-    if (this.loadedJsonlCache.has(jsonlPath)) return;
-    this.loadedJsonlCache.add(jsonlPath);
-
-    try {
-      const response = await fetch(jsonlPath);
-      if (!response.ok) throw new Error(`加载失败: ${jsonlPath}`);
-      const jsonlContent = await response.text();
-      const lines = jsonlContent
-        .trim()
-        .split('\n')
-        .filter((line) => line.trim());
-
-      for (const line of lines) {
-        try {
-          const item = JSON.parse(line);
-          const { path, id, folder } = item;
-
-          if (!path) {
-            console.warn('跳过无 path 的项:', line);
-            continue;
-          }
-
-          // 生成唯一 key（可自定义逻辑）
-          const figureKey = 'jsonl_' + (id || path + '_' + Math.random().toString(36).slice(2, 8));
-          const position: 'left' | 'center' | 'right' = 'center';
-          const motion = 'idle01';
-          const expression = 'idle01';
-
-          // ✅ Step 1：加入 Redux 的 freeFigure 中，防止被 useSetFigure 移除
-          const freeFigureList = webgalStore.getState().stage.freeFigure;
-          const isExist = freeFigureList.some((f) => f.key === figureKey);
-          if (!isExist) {
-            webgalStore.dispatch(
-              stageActions.setFreeFigure([
-                ...freeFigureList,
-                {
-                  key: figureKey,
-                  name: path,
-                  basePosition: position,
-                },
-              ]),
-            );
-          }
-
-          // ✅ Step 2：添加 Live2D 模型到 PixiStage
-          this.addLive2dFigure(figureKey, path, position, motion, expression);
-        } catch (e) {
-          console.warn('解析 jsonl 行出错:', line, e);
-        }
-      }
-    } catch (e) {
-      console.error(`加载 JSONL 文件失败: ${jsonlPath}`, e);
-    }
-  }
 
   // 播放gif
   public async addGifFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
@@ -741,6 +678,117 @@ export default class PixiStage {
       console.error('GIF 加载失败', e);
     }
   }
+
+  // 实现添加拼好模
+  public async addJsonlFigure(key: string, jsonlPath: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
+    console.log('正在调用 addJsonlFigure');
+    if (this.isLive2dAvailable !== true) return;
+
+    try {
+      const response = await fetch(jsonlPath);
+      const jsonlText = await response.text();
+      const lines = jsonlText.split('\n').filter(Boolean);
+
+      const paths: string[] = [];
+      for (const line of lines) {
+        try {
+          const obj = JSON.parse(line);
+          if (obj?.path) paths.push(obj.path);
+        } catch (e) {
+          console.warn('JSONL parse error in line:', line);
+        }
+      }
+
+      if (paths.length === 0) {
+        console.warn('No valid paths in jsonl:', jsonlPath);
+        return;
+      }
+
+      const container = new WebGALPixiContainer();
+      const figureUuid = uuid();
+
+      // 清除已有 key
+      const index = this.figureObjects.findIndex((e) => e.key === key);
+      if (index >= 0) {
+        this.removeStageObjectByKey(key);
+      }
+
+      const metadata = this.getFigureMetadataByKey(key);
+      if (metadata?.zIndex) container.zIndex = metadata.zIndex;
+
+      this.figureContainer.addChild(container);
+      this.figureObjects.push({
+        uuid: figureUuid,
+        key,
+        pixiContainer: container,
+        sourceUrl: jsonlPath,
+        sourceExt: 'jsonl',
+        sourceType: 'live2d',
+      });
+
+      // 从状态读取 motion / expression（同 addLive2dFigure）
+      const motionFromState = webgalStore.getState().stage.live2dMotion.find((e) => e.target === key);
+      const expressionFromState = webgalStore.getState().stage.live2dExpression.find((e) => e.target === key);
+      const motionToSet = motionFromState?.motion ?? '';
+      const expressionToSet = expressionFromState?.expression ?? '';
+
+      // 加载模型并添加到 container 中
+      for (const modelPath of paths) {
+        const model = await this.live2DModel.from(modelPath, { autoInteract: false });
+        if (!model) continue;
+
+        const stageWidth = this.stageWidth;
+        const stageHeight = this.stageHeight;
+        const scaleX = stageWidth / model.width;
+        const scaleY = stageHeight / model.height;
+        const targetScale = Math.min(scaleX, scaleY);
+        const targetWidth = model.width * targetScale;
+        const targetHeight = model.height * targetScale;
+
+        model.scale.set(targetScale);
+        model.anchor.set(0.5);
+        model.position.set(0, stageHeight / 2);
+
+        container.setBaseY(stageHeight / 2);
+        if (targetHeight < stageHeight) {
+          container.setBaseY(stageHeight / 2 + (stageHeight - targetHeight) / 2);
+        }
+
+        if (presetPosition === 'center') {
+          container.setBaseX(stageWidth / 2);
+        } else if (presetPosition === 'left') {
+          container.setBaseX(targetWidth / 2);
+        } else if (presetPosition === 'right') {
+          container.setBaseX(stageWidth - targetWidth / 2);
+        }
+
+        container.pivot.set(0, stageHeight / 2);
+
+        // ✅ 设置 motion / expression（如有）
+        if (motionToSet) {
+          // @ts-ignore
+          model.motion(motionToSet, 0, 3);
+          this.updateL2dMotionByKey(key, motionToSet);
+        }
+        if (expressionToSet) {
+          // @ts-ignore
+          model.expression(expressionToSet);
+          this.updateL2dExpressionByKey(key, expressionToSet);
+        }
+
+        // @ts-ignore 防止自带眨眼
+        if (model.internalModel?.eyeBlink) {
+          model.internalModel.eyeBlink.blinkInterval = 1000 * 60 * 60 * 24;
+          model.internalModel.eyeBlink.nextBlinkTimeLeft = 1000 * 60 * 60 * 24;
+        }
+
+        container.addChild(model);
+      }
+    } catch (e) {
+      console.error('addJsonlFigure 加载失败:', e);
+    }
+  }
+
   /**
    * Live2d立绘，如果要使用 Live2D，取消这里的注释
    * @param jsonPath
@@ -926,7 +974,7 @@ export default class PixiStage {
     const container = target.pixiContainer;
     // Spine figure 结构: Container -> Sprite -> Spine
     const sprite = container.children[0] as PIXI.Container;
-    if (sprite && sprite.children && sprite.children[0]) {
+    if (sprite?.children?.[0]) {
       const spineObject = sprite.children[0];
       // @ts-ignore
       if (spineObject.state && spineObject.spineData) {

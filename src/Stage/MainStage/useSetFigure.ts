@@ -210,7 +210,9 @@ function addFigure(type?: 'image' | 'live2D' | 'spine', ...args: any[]) {
   const baseUrl = window.location.origin;
   const urlObject = new URL(url, baseUrl);
   const _type = urlObject.searchParams.get('type') as 'image' | 'live2D' | 'spine' | null;
-  if (url.endsWith('.json')) {
+  if (url.endsWith('.jsonl')) {
+    return addJsonlFigure(...args); // ✅ 优先处理 jsonl，否则拼好模可能会被识别为普通l2d
+  } else if (url.endsWith('.json')) {
     return addLive2dFigure(...args);
   } else if (url.endsWith('.skel') || _type === 'spine') {
     // @ts-ignore
@@ -228,4 +230,9 @@ function addFigure(type?: 'image' | 'live2D' | 'spine', ...args: any[]) {
 function addLive2dFigure(...args: any[]) {
   // @ts-ignore
   return WebGAL.gameplay.pixiStage?.addLive2dFigure(...args);
+}
+// 拼好模
+function addJsonlFigure(...args: any[]) {
+  // @ts-ignore
+  return WebGAL.gameplay.pixiStage?.addJsonlFigure(...args);
 }

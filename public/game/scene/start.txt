@@ -1,6 +1,9 @@
 changeBg:matched_F18_cool.png;
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko;
-祥子:test
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=smile02 -expression=smile02;
+祥子:千早爱音我屮死你
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=thinking01 -expression=thinking02;
+祥子:千早爱音我要嫁给你
+setTransform:{"brightness":0.8,"contrast":1.1,"saturation":0.9,"gamma":0.8,"colorRed":220,"colorGreen":216,"colorBlue":232,"bloom":0.5,"bloomBrightness":0.8,"bloomBlur":10,"bevel":1,"bevelThickness":15,"bevelRotation":30,"bevelRed":176,"bevelGreen":196,"bevelBlue":255} -target=sakiko -duration=0;
 祥子:test
 这些报错通常发生在：
 changeFigure:none -id=jsonl_sakiko1 -next;

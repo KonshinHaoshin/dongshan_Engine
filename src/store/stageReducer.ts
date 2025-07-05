@@ -234,7 +234,7 @@ const stageSlice = createSlice({
   },
 });
 
-export const { resetStageState, setStage, setStageVar } = stageSlice.actions;
+export const { resetStageState, setStage, setStageVar, setFreeFigure } = stageSlice.actions;
 export const stageActions = stageSlice.actions;
 export default stageSlice.reducer;
 
