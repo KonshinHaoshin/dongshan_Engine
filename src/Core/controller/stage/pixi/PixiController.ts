@@ -705,6 +705,7 @@ export default class PixiStage {
       }
 
       const container = new WebGALPixiContainer();
+      container.alpha = 0; // 👈 初始透明
       const figureUuid = uuid();
 
       // 清除已有 key
@@ -731,6 +732,8 @@ export default class PixiStage {
       const expressionFromState = webgalStore.getState().stage.live2dExpression.find((e) => e.target === key);
       const motionToSet = motionFromState?.motion ?? '';
       const expressionToSet = expressionFromState?.expression ?? '';
+
+      const models: any[] = [];
 
       // 加载模型并添加到 container 中
       for (const modelPath of paths) {
@@ -764,16 +767,20 @@ export default class PixiStage {
 
         container.pivot.set(0, stageHeight / 2);
 
-        // ✅ 设置 motion / expression（如有）
+        // 收集模型
+        models.push(model);
+        container.addChild(model);
+      }
+
+      // 👇 所有模型加载完后统一设置 motion / expression
+      for (const model of models) {
         if (motionToSet) {
           // @ts-ignore
           model.motion(motionToSet, 0, 3);
-          this.updateL2dMotionByKey(key, motionToSet);
         }
         if (expressionToSet) {
           // @ts-ignore
           model.expression(expressionToSet);
-          this.updateL2dExpressionByKey(key, expressionToSet);
         }
 
         // @ts-ignore 防止自带眨眼
@@ -781,9 +788,14 @@ export default class PixiStage {
           model.internalModel.eyeBlink.blinkInterval = 1000 * 60 * 60 * 24;
           model.internalModel.eyeBlink.nextBlinkTimeLeft = 1000 * 60 * 60 * 24;
         }
-
-        container.addChild(model);
       }
+
+      // 👇 更新状态记录（只更新一次）
+      if (motionToSet) this.updateL2dMotionByKey(key, motionToSet);
+      if (expressionToSet) this.updateL2dExpressionByKey(key, expressionToSet);
+
+      // 👇 显示容器
+      container.alpha = 1;
     } catch (e) {
       console.error('addJsonlFigure 加载失败:', e);
     }

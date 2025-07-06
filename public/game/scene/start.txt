@@ -6,5 +6,8 @@ changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=thinking01
 setTransform:{"brightness":0.8,"contrast":1.1,"saturation":0.9,"gamma":0.8,"colorRed":220,"colorGreen":216,"colorBlue":232,"bloom":0.5,"bloomBrightness":0.8,"bloomBlur":10,"bevel":1,"bevelThickness":15,"bevelRotation":30,"bevelRed":176,"bevelGreen":196,"bevelBlue":255} -target=sakiko -duration=0;
 祥子:test
 这些报错通常发生在：
-changeFigure:none -id=jsonl_sakiko1 -next;
+changeFigure: -id=sakiko -next;
+caosinimenma
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=smile02 -expression=smile02;
+
 caosinimenma
