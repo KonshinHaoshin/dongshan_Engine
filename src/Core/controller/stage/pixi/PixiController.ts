@@ -618,19 +618,22 @@ export default class PixiStage {
   public async addGifFigure(key: string, url: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
     const thisFigureContainer = new WebGALPixiContainer();
 
-    // 清除已有 key
-    const setFigIndex = this.figureObjects.findIndex((e) => e.key === key);
-    const isFigSet = setFigIndex >= 0;
-    if (isFigSet) {
+    // 移除已有相同 key 的立绘
+    const existingIndex = this.figureObjects.findIndex((e) => e.key === key);
+    if (existingIndex >= 0) {
       this.removeStageObjectByKey(key);
     }
 
+    // 设置 zIndex（如果 metadata 有）
     const metadata = this.getFigureMetadataByKey(key);
-    if (metadata?.zIndex) {
+    if (metadata?.zIndex !== undefined) {
       thisFigureContainer.zIndex = metadata.zIndex;
     }
 
+    // 添加容器到舞台
     this.figureContainer.addChild(thisFigureContainer);
+
+    // 注册到立绘对象列表
     const figureUuid = uuid();
     this.figureObjects.push({
       uuid: figureUuid,
@@ -642,7 +645,10 @@ export default class PixiStage {
     });
 
     try {
+      // ✅ 使用 fetch 异步加载 buffer
       const buffer = await fetch(url).then((res) => res.arrayBuffer());
+
+      // ✅ 使用 AnimatedGIF.fromBuffer 异步解码
       const gif = await AnimatedGIF.fromBuffer(buffer);
 
       const originalWidth = gif.width;
@@ -651,6 +657,7 @@ export default class PixiStage {
       const scaleY = this.stageHeight / originalHeight;
       const targetScale = Math.min(scaleX, scaleY);
 
+      // 设置缩放、锚点、初始位置
       gif.scale.set(targetScale);
       gif.anchor.set(0.5);
       gif.position.y = this.stageHeight / 2;
@@ -658,11 +665,13 @@ export default class PixiStage {
       const targetWidth = originalWidth * targetScale;
       const targetHeight = originalHeight * targetScale;
 
+      // Y 位置微调（让立绘整体居中）
       thisFigureContainer.setBaseY(this.stageHeight / 2);
       if (targetHeight < this.stageHeight) {
         thisFigureContainer.setBaseY(this.stageHeight / 2 + (this.stageHeight - targetHeight) / 2);
       }
 
+      // 设置 X 方向位置
       if (presetPosition === 'center') {
         thisFigureContainer.setBaseX(this.stageWidth / 2);
       } else if (presetPosition === 'left') {
@@ -672,13 +681,14 @@ export default class PixiStage {
       }
 
       thisFigureContainer.pivot.set(0, this.stageHeight / 2);
-      gif.play(); // 自动播放
+
+      // ✅ 播放动画 + 添加到容器
+      gif.play();
       thisFigureContainer.addChild(gif);
     } catch (e) {
       console.error('GIF 加载失败', e);
     }
   }
-
   // 实现添加拼好模
   public async addJsonlFigure(key: string, jsonlPath: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
     console.log('正在调用 addJsonlFigure');
@@ -690,10 +700,23 @@ export default class PixiStage {
       const lines = jsonlText.split('\n').filter(Boolean);
 
       const paths: string[] = [];
+      const jsonlBaseDir = jsonlPath.substring(0, jsonlPath.lastIndexOf('/') + 1);
+
       for (const line of lines) {
         try {
           const obj = JSON.parse(line);
-          if (obj?.path) paths.push(obj.path);
+          if (obj?.path) {
+            let fullPath = obj.path;
+
+            // 如果是相对路径，则补全
+            if (!obj.path.startsWith('game/')) {
+              // 例如 jsonlPath = 'game/figure/该溜子祥子/该溜子祥子.jsonl'
+              // 则 jsonlBaseDir = 'game/figure/该溜子祥子/'
+              fullPath = jsonlBaseDir + obj.path.replace(/^\.\//, '');
+            }
+
+            paths.push(fullPath);
+          }
         } catch (e) {
           console.warn('JSONL parse error in line:', line);
         }
@@ -736,12 +759,16 @@ export default class PixiStage {
       const models: any[] = [];
 
       // 加载模型并添加到 container 中
-      for (const modelPath of paths) {
-        const model = await this.live2DModel.from(modelPath, { autoInteract: false });
+// 👇 使用 Promise.all 同步等待所有模型加载完成
+      const modelPromises = paths.map((modelPath) => this.live2DModel.from(modelPath, { autoInteract: false }));
+
+      const loadedModels = await Promise.all(modelPromises);
+      const stageWidth = this.stageWidth;
+      const stageHeight = this.stageHeight;
+
+      for (const model of loadedModels) {
         if (!model) continue;
 
-        const stageWidth = this.stageWidth;
-        const stageHeight = this.stageHeight;
         const scaleX = stageWidth / model.width;
         const scaleY = stageHeight / model.height;
         const targetScale = Math.min(scaleX, scaleY);
@@ -767,11 +794,9 @@ export default class PixiStage {
 
         container.pivot.set(0, stageHeight / 2);
 
-        // 收集模型
         models.push(model);
         container.addChild(model);
       }
-
       // 👇 所有模型加载完后统一设置 motion / expression
       for (const model of models) {
         if (motionToSet) {
@@ -794,8 +819,10 @@ export default class PixiStage {
       if (motionToSet) this.updateL2dMotionByKey(key, motionToSet);
       if (expressionToSet) this.updateL2dExpressionByKey(key, expressionToSet);
 
-      // 👇 显示容器
-      container.alpha = 1;
+      // 👇 延迟 0.1 秒后显示容器
+      setTimeout(() => {
+        container.alpha = 1;
+      }, 100);
     } catch (e) {
       console.error('addJsonlFigure 加载失败:', e);
     }
