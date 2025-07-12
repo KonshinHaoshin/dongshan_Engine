@@ -690,6 +690,7 @@ export default class PixiStage {
     }
   }
   // 实现添加拼好模
+  /* eslint-disable complexity */
   public async addJsonlFigure(key: string, jsonlPath: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
     console.log('正在调用 addJsonlFigure');
     if (this.isLive2dAvailable !== true) return;
@@ -700,21 +701,21 @@ export default class PixiStage {
       const lines = jsonlText.split('\n').filter(Boolean);
 
       const paths: string[] = [];
+      let paramImport: number | null = null; // 用于存储 import 参数
       const jsonlBaseDir = jsonlPath.substring(0, jsonlPath.lastIndexOf('/') + 1);
 
       for (const line of lines) {
         try {
           const obj = JSON.parse(line);
+          // 解析 import 参数
+          if (obj?.import !== undefined) {
+            paramImport = Number(obj.import);
+          }
           if (obj?.path) {
             let fullPath = obj.path;
-
-            // 如果是相对路径，则补全
             if (!obj.path.startsWith('game/')) {
-              // 例如 jsonlPath = 'game/figure/该溜子祥子/该溜子祥子.jsonl'
-              // 则 jsonlBaseDir = 'game/figure/该溜子祥子/'
               fullPath = jsonlBaseDir + obj.path.replace(/^\.\//, '');
             }
-
             paths.push(fullPath);
           }
         } catch (e) {
@@ -728,10 +729,9 @@ export default class PixiStage {
       }
 
       const container = new WebGALPixiContainer();
-      container.alpha = 0; // 👈 初始透明
+      container.alpha = 0;
       const figureUuid = uuid();
 
-      // 清除已有 key
       const index = this.figureObjects.findIndex((e) => e.key === key);
       if (index >= 0) {
         this.removeStageObjectByKey(key);
@@ -750,7 +750,6 @@ export default class PixiStage {
         sourceType: 'live2d',
       });
 
-      // 从状态读取 motion / expression（同 addLive2dFigure）
       const motionFromState = webgalStore.getState().stage.live2dMotion.find((e) => e.target === key);
       const expressionFromState = webgalStore.getState().stage.live2dExpression.find((e) => e.target === key);
       const motionToSet = motionFromState?.motion ?? '';
@@ -758,46 +757,66 @@ export default class PixiStage {
 
       const models: any[] = [];
 
-      // 加载模型并添加到 container 中
-// 👇 使用 Promise.all 同步等待所有模型加载完成
-      const modelPromises = paths.map((modelPath) => this.live2DModel.from(modelPath, { autoInteract: false }));
+      for (const modelPath of paths) {
+        try {
+          const model = await this.live2DModel.from(modelPath, { autoInteract: false });
+          if (!model) continue;
 
-      const loadedModels = await Promise.all(modelPromises);
-      const stageWidth = this.stageWidth;
-      const stageHeight = this.stageHeight;
+          const stageWidth = this.stageWidth;
+          const stageHeight = this.stageHeight;
 
-      for (const model of loadedModels) {
-        if (!model) continue;
+          const scaleX = stageWidth / model.width;
+          const scaleY = stageHeight / model.height;
+          const targetScale = Math.min(scaleX, scaleY);
+          const targetWidth = model.width * targetScale;
+          const targetHeight = model.height * targetScale;
 
-        const scaleX = stageWidth / model.width;
-        const scaleY = stageHeight / model.height;
-        const targetScale = Math.min(scaleX, scaleY);
-        const targetWidth = model.width * targetScale;
-        const targetHeight = model.height * targetScale;
+          model.scale.set(targetScale);
+          model.anchor.set(0.5);
+          model.position.set(0, stageHeight / 2);
 
-        model.scale.set(targetScale);
-        model.anchor.set(0.5);
-        model.position.set(0, stageHeight / 2);
+          container.setBaseY(stageHeight / 2);
+          if (targetHeight < stageHeight) {
+            container.setBaseY(stageHeight / 2 + (stageHeight - targetHeight) / 2);
+          }
 
-        container.setBaseY(stageHeight / 2);
-        if (targetHeight < stageHeight) {
-          container.setBaseY(stageHeight / 2 + (stageHeight - targetHeight) / 2);
+          if (presetPosition === 'center') {
+            container.setBaseX(stageWidth / 2);
+          } else if (presetPosition === 'left') {
+            container.setBaseX(targetWidth / 2);
+          } else if (presetPosition === 'right') {
+            container.setBaseX(stageWidth - targetWidth / 2);
+          }
+
+          container.pivot.set(0, stageHeight / 2);
+          container.addChild(model);
+          models.push(model);
+
+          // @ts-ignore 禁用自动眨眼
+          if (model.internalModel?.eyeBlink) {
+            model.internalModel.eyeBlink.blinkInterval = 1000 * 60 * 60 * 24;
+            model.internalModel.eyeBlink.nextBlinkTimeLeft = 1000 * 60 * 60 * 24;
+          }
+        } catch (err) {
+          console.warn(`加载模型 ${modelPath} 失败:`, err);
         }
-
-        if (presetPosition === 'center') {
-          container.setBaseX(stageWidth / 2);
-        } else if (presetPosition === 'left') {
-          container.setBaseX(targetWidth / 2);
-        } else if (presetPosition === 'right') {
-          container.setBaseX(stageWidth - targetWidth / 2);
-        }
-
-        container.pivot.set(0, stageHeight / 2);
-
-        models.push(model);
-        container.addChild(model);
       }
-      // 👇 所有模型加载完后统一设置 motion / expression
+
+      // ✅ 播放 PARAM_IMPORT 动作 (在显示之前，对所有模型)
+      if (paramImport !== null && models.length > 0) {
+        console.info('直接设置 PARAM_IMPORT 参数:', paramImport);
+
+        for (const model of models) {
+          try {
+            model?.internalModel?.coreModel?.setParamFloat?.('PARAM_IMPORT', paramImport);
+            console.info('设置成功？');
+          } catch (e) {
+            console.warn(`设置 PARAM_IMPORT 参数失败 (${model.name || '未知模型'}):`, e);
+          }
+        }
+      }
+
+      // 应用从状态中读取的 motion 和 expression
       for (const model of models) {
         if (motionToSet) {
           // @ts-ignore
@@ -807,19 +826,12 @@ export default class PixiStage {
           // @ts-ignore
           model.expression(expressionToSet);
         }
-
-        // @ts-ignore 防止自带眨眼
-        if (model.internalModel?.eyeBlink) {
-          model.internalModel.eyeBlink.blinkInterval = 1000 * 60 * 60 * 24;
-          model.internalModel.eyeBlink.nextBlinkTimeLeft = 1000 * 60 * 60 * 24;
-        }
       }
 
-      // 👇 更新状态记录（只更新一次）
       if (motionToSet) this.updateL2dMotionByKey(key, motionToSet);
       if (expressionToSet) this.updateL2dExpressionByKey(key, expressionToSet);
 
-      // 👇 延迟 0.1 秒后显示容器
+      // 延迟 0.1 秒后显示容器
       setTimeout(() => {
         container.alpha = 1;
       }, 100);
@@ -827,7 +839,8 @@ export default class PixiStage {
       console.error('addJsonlFigure 加载失败:', e);
     }
   }
-
+  /* eslint-disable complexity */
+  
   /**
    * Live2d立绘，如果要使用 Live2D，取消这里的注释
    * @param jsonPath

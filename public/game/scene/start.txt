@@ -1,6 +1,8 @@
 
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=smile02 -expression=smile02;
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko;
+xz:test
 changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=angry01 -expression=angry01;
 
 xz:caosinimenma
 changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=angry04 -expression=angry07;
+
