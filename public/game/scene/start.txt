@@ -1,8 +1,2 @@
-
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko;
-xz:test
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=angry01 -expression=angry01;
-
-xz:caosinimenma
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -motion=angry04 -expression=angry07;
-
+祥子:卧槽死你的🐎
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -expression=smile01 -motion=smile01 -next;

@@ -692,7 +692,7 @@ export default class PixiStage {
   // 实现添加拼好模
   /* eslint-disable complexity */
   public async addJsonlFigure(key: string, jsonlPath: string, presetPosition: 'left' | 'center' | 'right' = 'center') {
-    console.log('正在调用 addJsonlFigure');
+    console.log('正在使用聚合模型');
     if (this.isLive2dAvailable !== true) return;
 
     try {
@@ -792,6 +792,14 @@ export default class PixiStage {
           container.addChild(model);
           models.push(model);
 
+          // ✅ 禁用自动旋转（防止抖动或头部异常移动）
+          // 感谢Hardy-Lee桑
+          if (model.internalModel.angleXParamIndex !== undefined) model.internalModel.angleXParamIndex = 999;
+          if (model.internalModel.angleYParamIndex !== undefined) model.internalModel.angleYParamIndex = 999;
+          if (model.internalModel.angleZParamIndex !== undefined) model.internalModel.angleZParamIndex = 999;
+
+
+
           // @ts-ignore 禁用自动眨眼
           if (model.internalModel?.eyeBlink) {
             model.internalModel.eyeBlink.blinkInterval = 1000 * 60 * 60 * 24;
@@ -840,7 +848,7 @@ export default class PixiStage {
     }
   }
   /* eslint-disable complexity */
-  
+
   /**
    * Live2d立绘，如果要使用 Live2D，取消这里的注释
    * @param jsonPath
