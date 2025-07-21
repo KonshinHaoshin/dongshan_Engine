@@ -194,7 +194,6 @@ export interface IStageState {
   effects: Array<IEffect>; // 应用的变换
   bgTransform: string;
   bgFilter: string;
-  bgTransition: string; // 切换背景的方式
   PerformList: Array<IRunPerform>; // 要启动的演出列表
   currentDialogKey: string; // 当前对话的key
   live2dMotion: ILive2DMotion[];
