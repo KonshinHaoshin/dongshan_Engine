@@ -1,6 +1,6 @@
 {
-  "name": "webgal-engine",
-  "version": "4.5.14",
+  "name": "Eastmount_Silver-gray-love",
+  "version": "1.0.0",
   "scripts": {
     "dev": "vite --host --port 3000",
     "build": "cross-env NODE_ENV=production tsc && vite build --base=./",

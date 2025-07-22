@@ -14,9 +14,7 @@ export default function ImageTextbox(props: any) {
       {/* 角色名字 */}
       {isHasName && (
         <div className={styles.nameBox} style={{ fontFamily: font }}>
-          {showName?.[0]?.map((node: any, idx: number) => (
-            <span key={idx}>{node.reactNode}</span>
-          ))}
+          {isHasName ? showName?.[0]?.map((node: any, idx: number) => <span key={idx}>{node.reactNode}</span>) : null}
         </div>
       )}
 
