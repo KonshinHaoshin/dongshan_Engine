@@ -6,7 +6,8 @@ import { useTextAnimationDuration, useTextDelay } from '@/hooks/useTextOptions';
 import { getTextSize } from '@/UI/getTextSize';
 import { match } from '@/Core/util/match';
 import { textSize } from '@/store/userDataInterface';
-import IMSSTextbox from '@/Stage/TextBox/IMSSTextbox';
+// import IMSSTextbox from '@/Stage/TextBox/IMSSTextbox'; // silver-gray使用的不是这个
+import ImageTextbox from '@/Stage/TextBox/ImageTextbox';
 import { SCREEN_CONSTANTS } from '@/Core/util/constants';
 import useEscape from '@/hooks/useEscape';
 
@@ -46,7 +47,8 @@ export const TextBox = () => {
   const currentDialogKey = stageState.currentDialogKey;
   const miniAvatar = stageState.miniAvatar;
   const textboxOpacity = userDataState.optionData.textboxOpacity;
-  const Textbox = IMSSTextbox;
+  // const Textbox = IMSSTextbox;
+  const Textbox = ImageTextbox;
   const fontOptimization = guiState.fontOptimization;
 
   const [isShowStroke, setIsShowStroke] = useState(true);

@@ -46,8 +46,17 @@ $height: 330px;
 }
 
 .TextBox_Background {
-  z-index: 2;
-  background: linear-gradient(rgba(245, 247, 250, 1) 0%, rgba(189, 198, 222, 1) 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('@/assets/png/textbox.png'); // ← 注意路径要与你实际匹配喵！
+  background-size: cover;       // 覆盖整个区域（可改成 contain 不拉伸）
+  background-position: center;
+  background-repeat: no-repeat;
+  pointer-events: none;         // 不挡住用户点击！
+  z-index: 0;
 }
 
 @keyframes showSoftly {
