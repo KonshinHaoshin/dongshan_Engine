@@ -1,2 +1,3 @@
-祥子:卧槽死你的🐎
+changeBg:M19.png;
+祥子:你好
 changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -expression=smile01 -motion=smile01 -next;
