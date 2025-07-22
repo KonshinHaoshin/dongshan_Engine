@@ -47,25 +47,45 @@
 .Title_button {
   font-weight: 600;
   font-family: 'Orbitron', sans-serif;
-  color: #00f7ff;
+  color: #d4c0ff;
   font-size: 1.2rem;
   letter-spacing: 0.15em;
   text-align: center;
   cursor: pointer;
   padding: 1em 2.5em;
-  border-radius: 20px!important;
-  border: 1px solid rgba(0, 255, 255, 0.6);
-  background: rgba(0, 255, 255, 0.1);
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+  border: none; /* 去掉边框！ */
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 16px rgba(120, 100, 180, 0.2);
   transition: all 0.3s ease;
+  position: relative; /* 用于 ::after 定位 */
   transform: perspective(300px) rotateX(0deg);
 }
 
+.Title_button::after {
+  content: '';
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 12px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #d4c0ff, transparent);
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
 .Title_button:hover {
-  background: rgba(0, 255, 255, 0.2);
-  box-shadow: 0 0 24px rgba(0, 255, 255, 0.8), inset 0 0 8px rgba(0, 255, 255, 0.4);
-  transform: perspective(300px) rotateX(2deg) scale(1.03);
+  background: rgba(20, 10, 40, 0.95);
+  color: #ffffff;
+  box-shadow: 0 0 24px rgba(200, 180, 255, 0.35);
+  transform: perspective(300px) rotateX(3deg);
+}
+
+.Title_button:hover::after {
+  left: 15%;
+  right: 15%;
+  background: linear-gradient(to right, transparent, #ffffff, transparent);
+  opacity: 1;
 }
 
 .Title_button_text {
