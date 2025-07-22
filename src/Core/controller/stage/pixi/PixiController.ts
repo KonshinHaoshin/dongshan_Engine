@@ -739,7 +739,7 @@ export default class PixiStage {
 
       const metadata = this.getFigureMetadataByKey(key);
       if (metadata?.zIndex) container.zIndex = metadata.zIndex;
-
+      const models: any[] = [];
       this.figureContainer.addChild(container);
       this.figureObjects.push({
         uuid: figureUuid,
@@ -755,7 +755,7 @@ export default class PixiStage {
       const motionToSet = motionFromState?.motion ?? '';
       const expressionToSet = expressionFromState?.expression ?? '';
 
-      const models: any[] = [];
+
 
       for (const modelPath of paths) {
         try {
