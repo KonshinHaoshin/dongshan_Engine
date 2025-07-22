@@ -24,17 +24,18 @@
   font-weight: bold;
   font-size: 40px;
   text-shadow:
-    -4px -4px 0 black,
-    4px -4px 0 black,
-    -4px  4px 0 black,
-    4px  4px 0 black,
-    0px  0px 4px black;
+    -2px -2px 0 black,
+    2px -2px 0 black,
+    -2px  2px 0 black,
+    2px  2px 0 black,
+    0px  0px 2px black;
   pointer-events: none;
 }
 
 .textArea {
   position: absolute;
-  bottom: 280px;
+  top:280px;
+  max-height: 280px;
   left: 320px;
   right: 180px;
   color: white;
@@ -48,6 +49,7 @@
     2px  2px 0 black,
     0px  0px 2px black;
   pointer-events: none;
+
 }
 
 @keyframes typeIn {
@@ -69,9 +71,9 @@
   /* 黑边描边效果 ✨ */
   color: white;
   text-shadow:
-    -4px -4px 0 black,
-    4px -4px 0 black,
-    -4px  4px 0 black,
-    4px  4px 0 black,
-    0px  0px 4px black;
+    -2px -2px 0 black,
+    2px -2px 0 black,
+    -2px  2px 0 black,
+    2px  2px 0 black,
+    0px  0px 2px black;
 }
