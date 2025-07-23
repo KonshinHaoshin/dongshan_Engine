@@ -2,7 +2,7 @@
 import styles from '@/UI/BottomControlPanel/bottomControlPanel.module.scss';
 import { webgalStore } from '@/store/store';
 import { nextSentence } from '@/Core/controller/gamePlay/nextSentence';
-
+import autoPNG from '@/assets/png/auto.png';
 import { WebGAL } from '@/Core/WebGAL';
 
 /**
@@ -24,6 +24,7 @@ const setButton = (on: boolean) => {
 export const stopAuto = () => {
   WebGAL.gameplay.isAuto = false;
   setButton(false);
+  removeAutoIcon();
   if (WebGAL.gameplay.autoInterval !== null) {
     clearInterval(WebGAL.gameplay.autoInterval);
     WebGAL.gameplay.autoInterval = null;
@@ -38,13 +39,13 @@ export const stopAuto = () => {
  * 切换自动播放状态
  */
 export const switchAuto = () => {
-  // 现在正在自动播放
   if (WebGAL.gameplay.isAuto) {
     stopAuto();
+    removeAutoIcon(); // ❌ 关闭时移除图标
   } else {
-    // 当前不在自动播放
     WebGAL.gameplay.isAuto = true;
     setButton(true);
+    insertAutoIcon(); // ✅ 打开时插入图标
     WebGAL.gameplay.autoInterval = setInterval(autoPlay, 100);
   }
 };
@@ -74,5 +75,34 @@ const autoPlay = () => {
   // nextSentence();
   if (WebGAL.gameplay.autoTimeout === null) {
     WebGAL.gameplay.autoTimeout = setTimeout(autoNextSentence, autoPlayDelay);
+  }
+};
+
+const AUTO_ICON_ID = 'WebGAL_Auto_Icon';
+
+const insertAutoIcon = () => {
+  const existing = document.getElementById(AUTO_ICON_ID);
+  if (existing) return; // 已经存在就不重复插了
+
+  const img = document.createElement('img');
+  img.src = autoPNG; // auto 按钮
+  img.id = AUTO_ICON_ID;
+  img.alt = 'AUTO';
+  img.style.position = 'absolute';
+  img.style.bottom = '80px';
+  img.style.left = '110px';
+  img.style.width = '100px';
+  img.style.zIndex = '9999';
+  img.style.pointerEvents = 'none';
+  img.style.opacity = '0.9';
+  img.style.animation = 'autoIconFloat 1.5s ease-in-out infinite alternate';
+
+  document.body.appendChild(img);
+};
+
+const removeAutoIcon = () => {
+  const existing = document.getElementById(AUTO_ICON_ID);
+  if (existing) {
+    existing.remove();
   }
 };

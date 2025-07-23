@@ -13,9 +13,7 @@ export default function ImageTextbox(props: any) {
       {/* 文本区域（包含名字与正文） */}
       <div className={styles.textboxRegion} style={{ fontFamily: font }}>
         <div className={styles.nameBox}>
-          {isHasName
-            ? showName?.[0]?.map((node: any, idx: number) => <span key={idx}>{node.reactNode}</span>)
-            : null}
+          {isHasName ? showName?.[0]?.map((node: any, idx: number) => <span key={idx}>{node.reactNode}</span>) : null}
         </div>
 
         <div className={styles.textArea}>
