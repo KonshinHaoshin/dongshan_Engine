@@ -2,17 +2,17 @@
   z-index: 3;
   position: absolute;
   margin: auto;
-  max-width: 1680px;
+  max-width: 2520px; /* 原1680 * 1.5 */
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 垂直居中 */
-  align-items: center;     /* 水平居中 */
-  background: transparent; /* 透明背景 */
-  border-radius: 0px 0px 0px 0px;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border-radius: 0px;
   padding: 0;
   box-sizing: border-box;
   font-weight: bold;
-  font-size: 24px;
+  font-size: 36px; /* 原24 * 1.5 */
   color: white;
   letter-spacing: 0.1em;
   text-align: center;
@@ -20,15 +20,13 @@
 }
 
 .TextBox_main_miniavatarOff {
-  left: 25px;
+  left: 38px; /* 原25 * 1.5 */
 }
-
-
 
 @keyframes fadeInOut {
   0% {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px); /* 放大 */
   }
   20% {
     opacity: 1;
@@ -40,12 +38,14 @@
   }
   100% {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(-15px);
   }
 }
 
 .TextBox_textElement_Settled {
   animation: fadeInOut 6s ease-in-out forwards;
+  position: relative;
+  opacity: 1;
 }
 
 .outer {
@@ -53,14 +53,14 @@
   white-space: nowrap;
   left: 0;
   top: 0;
-  color: rgb(255, 255, 255);
+  color: white;
   z-index: 2;
   text-shadow:
-    -2px -2px 0 black,
-    2px -2px 0 black,
-    -2px  2px 0 black,
-    2px  2px 0 black,
-    0px  0px 2px black;
+    -3px -3px 0 black,
+    3px -3px 0 black,
+    -3px  3px 0 black,
+    3px  3px 0 black,
+    0px  0px 4px black;
 }
 
 .inner {
@@ -68,8 +68,8 @@
   white-space: nowrap;
   left: 0;
   top: 0;
-  color: rgb(0, 0, 0);
-  -webkit-text-stroke: 0.05em black;
+  color: black;
+  -webkit-text-stroke: 0.075em black; /* 原0.05em 放大 */
   z-index: 1;
   opacity: 1;
 }
@@ -79,39 +79,40 @@
   white-space: nowrap;
 }
 
-
-.TextBox_textElement_Settled {
-  position: relative;
-  opacity: 1;
-}
-
-
-
-
 .TextBox_ShowName_Background {
-  z-index: 2;
-  background: rgba(11, 52, 110, 1);
-  border: 4px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 3px 3px 10px rgba(100, 100, 100, 0.5);
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
-@keyframes TextDelayShow {
-  0% {
-    opacity: 0;
-  }
+.TextBox_showName {
+  font-size: 127.5%; /* 原85% 放大 */
+  padding: 0 3em;
+  position: absolute;
+  top: -102px; /* -68 * 1.5 */
+  left: 50%;
+  transform: translateX(-50%);
+  height: 120px; /* 80 * 1.5 */
+  line-height: 102px; /* 68 * 1.5 */
+  z-index: 3;
+  text-align: center;
 
-  100% {
-    opacity: 1;
-  }
+  border-radius: 0px;
+  border-bottom: 4.5px solid #0a3a75;
+  background: none;
+  font-weight: bold;
+  color: white;
+  letter-spacing: 0.1em;
 }
 
 .miniAvatarContainer {
   position: absolute;
-  height: 450px;
-  width: 450px;
+  height: 675px; /* 450 * 1.5 */
+  width: 675px;
   bottom: 0;
-  left: -250px;
-  border-radius: 0px 0px 0px 0px;
+  left: -375px; /* -250 * 1.5 */
+  border-radius: 0px;
   overflow: hidden;
 }
 
@@ -120,13 +121,13 @@
   max-width: 100%;
   position: absolute;
   bottom: 0;
-  filter: drop-shadow(15px 0 3px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(22.5px 0 4.5px rgba(0, 0, 0, 0.5)); /* 放大阴影 */
 }
 
 .nameContainer {
   position: absolute;
-  left: 2em;
-  top: -3.5em;
+  left: 3em; /* 2em * 1.5 */
+  top: -5.25em; /* -3.5em * 1.5 */
 }
 
 .outerName {
@@ -135,49 +136,21 @@
   top: 0;
   color: white;
   z-index: 2;
-
   text-shadow:
-    -1px -1px 0 black,
-    1px -1px 0 black,
-    -1px  1px 0 black,
-    1px  1px 0 black;
+    -1.5px -1.5px 0 black,
+    1.5px -1.5px 0 black,
+    -1.5px  1.5px 0 black,
+    1.5px  1.5px 0 black;
 }
-
 
 .innerName {
   position: absolute;
   left: 0;
   top: 0;
   z-index: 1;
-
 }
 
 .text {
-  line-height: 1.9em;
+  line-height: 2.85em; /* 原1.9 * 1.5 */
   overflow: hidden;
-}
-.TextBox_ShowName_Background {
-  display: none !important;
-  opacity: 0 !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-}
-.TextBox_showName {
-  font-size: 85%;
-  padding: 0 2em;
-  position: absolute;
-  top: -68px;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 80px;
-  line-height: 68px;
-  z-index: 3;
-  text-align: center;
-
-  border-radius: 0px 0px 0px 0px;
-  border-bottom: 3px solid #0a3a75; /* 深蓝色下划线 */
-  background: none;
-  font-weight: bold;
-  color: white;
-  letter-spacing: 0.1em;
 }
