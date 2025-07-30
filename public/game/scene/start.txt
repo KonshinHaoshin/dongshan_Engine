@@ -1,4 +1,4 @@
 changeBg:M19.png;
 祥子:你好
-changeFigure:该溜子祥子/该溜子祥子.jsonl -id=sakiko -expression=smile01 -motion=smile01 -next;
-灯:“因为某个不知名的邪恶集团的决定，所以要把你赶出乐队少女界。现在无论是羽丘、花㗛川、月之森的学生甚至是RING里的员工都不会和你交流的。”
+changeFigure:该溜子祥子/该溜子祥子.jsonl -id=tomori -motion=idle01 -expression=idle01 -next;
+祥子:哈哈，那就厉害了
