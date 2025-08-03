@@ -1,4 +1,8 @@
 changeBg:M19.png;
 祥子:你好
 changeFigure:该溜子祥子/该溜子祥子.jsonl -id=tomori -motion=idle01 -expression=idle01 -next;
+changeFigure:gif/output.webm -id=sakiko -right;
+changeFigure:gif/output.gif -id=sakiko01 -left;
 祥子:哈哈，那就厉害了
+changeFigure:none -id=sakiko -next;
+test;
