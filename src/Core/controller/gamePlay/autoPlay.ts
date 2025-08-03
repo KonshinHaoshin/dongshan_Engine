@@ -89,15 +89,20 @@ const insertAutoIcon = () => {
   img.id = AUTO_ICON_ID;
   img.alt = 'AUTO';
   img.style.position = 'absolute';
-  img.style.bottom = '80px';
-  img.style.left = '110px';
-  img.style.width = '100px';
+  img.style.bottom = '160px';
+  img.style.left = '120px';
+  img.style.width = '180px';
   img.style.zIndex = '9999';
   img.style.pointerEvents = 'none';
-  img.style.opacity = '0.9';
+  img.style.opacity = '1';
   img.style.animation = 'autoIconFloat 1.5s ease-in-out infinite alternate';
 
-  document.body.appendChild(img);
+  const container = document.getElementById('root');
+  if (container) {
+    container.appendChild(img);
+  } else {
+    console.warn('没有找到容器 #root 喵～AUTO 图标无法插入 (；ω；)');
+  }
 };
 
 const removeAutoIcon = () => {

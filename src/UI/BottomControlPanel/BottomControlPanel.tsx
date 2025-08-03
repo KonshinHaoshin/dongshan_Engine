@@ -95,7 +95,6 @@ export const BottomControlPanel = () => {
     <>
       {GUIStore.showTextBox && stageState.enableFilm === '' && showControlPanel && (
         <div className={styles.main} style={{ visibility: GUIStore.controlsVisibility ? 'visible' : 'hidden' }}>
-
           {GUIStore.showTextBox && (
             <span
               className={styles.singleButton}
